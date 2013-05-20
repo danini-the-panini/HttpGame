@@ -61,9 +61,12 @@ public class HttpRequest
     
     private void extractParameters(String paramString)
     {
+        println("Parameters! " + paramString);
         String[] params = paramString.split("&");
         for (String param :params)
         {
+            param = param.trim();
+            if (param.isEmpty()) continue;
             println("PARAMETER! " + param);
             String[] namevalue = param.split("=");
             List<String> list = parameters.get(namevalue[0]);
@@ -163,6 +166,7 @@ public class HttpRequest
         
         if ("POST".equalsIgnoreCase(method))
         {
+            println("getting POST data");
             extractParameters(new String(content));
         }
 

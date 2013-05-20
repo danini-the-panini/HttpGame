@@ -26,7 +26,6 @@ public class ClientHandler extends Thread
     private AtomicBoolean running = new AtomicBoolean(true);
     
     private AtomicReference<Socket> socket = new AtomicReference<Socket>(null);
-    private HashMap<String,Executor> executors = new HashMap<String, Executor>();
     private InputStream in;
     private OutputStream out;
 
@@ -41,7 +40,7 @@ public class ClientHandler extends Thread
         this.socket.set(socket);
     }
     
-    public abstract class Executor
+    public static abstract class Executor
     {
         public abstract byte[] run(HttpRequest request);
     }
@@ -69,9 +68,9 @@ public class ClientHandler extends Thread
                     HttpRequest request = new HttpRequest(in);
                     
                     String url = request.getUrl();
-                    if (url.startsWith("/")) url = "."+url;
-                    else url = "./"+url;
                     if (url.endsWith("/")) url += "index.html";
+                    
+                    boolean isExecutor = false;
                     
                     String ext = url.substring(url.lastIndexOf(".")+1);
                     String type;
@@ -86,12 +85,24 @@ public class ClientHandler extends Thread
                     else if ("png".equalsIgnoreCase(ext))
                         type = "image/png";
                     else if ("x".equalsIgnoreCase(ext))
+                    {
+                        isExecutor = true;
                         type = "text/plain"; // TODO: jason maybe?
+                    }
                     else
                         type = "text/plain";
                     
+                    if (!isExecutor)
+                    {
+                        if (url.startsWith("/")) url = "."+url;
+                        else url = "./"+url;
+                    }
+                    else
+                    {
+                        if (url.startsWith("/")) url = url.substring(1);
+                    }
+                    
                     println("URL == " + url);
-                    File res = new File(url);
                     
                     UUID uuid;
                     String uuidStr = request.getCookie("uuid");
@@ -110,46 +121,49 @@ public class ClientHandler extends Thread
                     
                     println(getName() + " SENDING RESPONSE");
                     HttpResponse response = new HttpResponse();
-                    if (res.exists())
+                    File res = new File(url);
+                        
+                    byte[] content = null;
+
+                    if (isExecutor)
+                    {
+                        String exName = url.substring(0, url.indexOf(".x"));
+                        println("EXECUTOR NAME: " + exName);
+                        Executor ex = null;
+                        try
+                        {
+                            ex = (Executor)(Class.forName("httpgame."+exName).newInstance());
+                        } catch (Exception ex1)
+                        { println(ex1.toString()); }
+                        if (ex != null)
+                            content = ex.run(request);
+                    }
+                    else  if (res.exists())
                     {
                         BufferedInputStream resIn =
                                 new BufferedInputStream(new FileInputStream(res));
-                        
-                        byte[] content = null;
-                        
-                        if ("x".equals(ext))
-                        {
-                            Executor ex = executors.get(url.substring(0, url.indexOf(".x")));
-                            if (ex != null)
-                                content = ex.run(request);
-                        }
-                        else 
-                        {
-                            content = read(resIn);
-                        }
-                        
-                        if ("danml".equals(ext))
-                        {
-                            Danml danml = new Danml(new String(content));
-                            danml.addReplacement("board", GameUtils.buildBoard());
-                            content = danml.parse().getBytes();
-                        }
-                        
-                        if (content == null)
-                        {
-                            response.setStatus(404);
-                        }
-                        else
-                        {
-                            response.setStatus(200);
-                            response.setContentType(type);
-                            response.setContent(content);
-                        }
+
+                        content = read(resIn);
                     }
-                    else
+
+                    if ("danml".equals(ext))
+                    {
+                        Danml danml = new Danml(new String(content));
+                        danml.addReplacement("board", GameUtils.buildBoard());
+                        content = danml.parse().getBytes();
+                    }
+
+                    if (content == null)
                     {
                         response.setStatus(404);
                     }
+                    else
+                    {
+                        response.setStatus(200);
+                        response.setContentType(type);
+                        response.setContent(content);
+                    }
+                        
                     response.send(out);
                     
                     currentSocket.close();
