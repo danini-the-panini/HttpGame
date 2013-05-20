@@ -31,27 +31,11 @@ public class FileUtils
         return result;
     }
     
-    public static int read(InputStream in, byte[] buffer)
-            throws IOException
-    {
-        int numBytes = buffer.length;
-        int numRead = 0;
-        int n = 0;
-        
-        while (numRead < numBytes && n > 0)
-        {
-            n = in.read(buffer, numRead, Math.min(4096, numBytes-numRead));
-            if (n != -1) numRead += n;
-        }
-        return numRead;
-    }
-    
-    
     public static String read(InputStream in, int numBytes)
             throws IOException
     {
         byte[] buffer = new byte[numBytes];
-        int numRead = read(in, buffer);
+        int numRead = in.read(buffer);
         return new String(buffer, 0, numRead);
     }
     

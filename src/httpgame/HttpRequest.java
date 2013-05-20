@@ -160,8 +160,10 @@ public class HttpRequest
         
         if (getContentLength() > 0)
         {
+            println("before reading content");
             content = new byte[getContentLength()];
-            read(in, content);
+            in.read(content);
+            println("after reading content");
         }
         
         if ("POST".equalsIgnoreCase(method))
