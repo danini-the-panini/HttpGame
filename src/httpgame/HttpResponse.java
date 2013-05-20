@@ -6,8 +6,10 @@ package httpgame;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import static utils.ConsoleUtils.*;
 import static utils.HttpUtils.*;
@@ -21,7 +23,7 @@ public class HttpResponse
     
     private int status = 0;
     
-    private HashMap<String,String> headers = new HashMap<String, String>();
+    private HashMap<String,List<String>> headers = new HashMap<String, List<String>>();
     
     private byte[] content = null;
 
@@ -30,9 +32,30 @@ public class HttpResponse
         this.status = status;
     }
     
+    public void addHeader(String name, String value)
+    {
+        List<String> list = headers.get(name);
+        if (list == null)
+        {
+            list = new ArrayList<String>();
+            headers.put(name,list);
+        }
+        list.add(value);
+    }
+    
     public void setHeader(String name, String value)
     {
-        headers.put(name, value);
+        List<String> list = headers.get(name);
+        if (list == null)
+        {
+            list = new ArrayList<String>();
+            headers.put(name,list);
+        }
+        else
+        {
+            list.clear();
+        }
+        list.add(value);
     }
     
     public void setContentType(String value)
@@ -46,17 +69,17 @@ public class HttpResponse
         setHeader("Content-Length", ""+content.length);
     }
     
-    public void setCookie(String token, Date expires)
+    public void setCookie(String name, String value, Date expires)
     {
-        setHeader("Set-Cookie",
-                "token=" + token + "; "
+        addHeader("Set-Cookie",
+                name + "=" + value + "; "
                 + "path=/; "
                 + "expres="+ HTTP_DATE_FORMAT.format(expires));
     }
     
-    public void deleteCookie()
+    public void deleteCookie(String name)
     {
-        setCookie(" ",new Date(0));
+        setCookie(name," ",new Date(0));
     }
     
     public void send(OutputStream out)
@@ -76,12 +99,16 @@ public class HttpResponse
         out.write(line.getBytes());
         out.write(CRLF.getBytes());
         
-        for (Map.Entry<String,String> e :headers.entrySet())
+        for (Map.Entry<String,List<String>> e :headers.entrySet())
         {
-            line = e.getKey() + ": " + e.getValue();
-            println(Tn + "| -> " + line);
-            out.write(line.getBytes());
-            out.write(CRLF.getBytes());
+            String key = e.getKey();
+            for (String value :e.getValue())
+            {
+                line = key + ": " + value;
+                println(Tn + "| -> " + line);
+                out.write(line.getBytes());
+                out.write(CRLF.getBytes());
+            }
         }
         
         out.write(CRLF.getBytes());

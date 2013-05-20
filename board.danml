@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="board.js"></script>
+    </head>
+    <body>
+        <div id="temp">You are playing a Game!</div>
+        <table>
+            <? board ?>
+        </table>
+    </body>
+</html>

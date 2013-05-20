@@ -13,7 +13,7 @@ public class FileUtils
     public static byte[] read(InputStream in)
             throws IOException
     {
-        byte[] result = new byte[1];
+        byte[] result = new byte[0];
         
         int n, oldLen;
         do

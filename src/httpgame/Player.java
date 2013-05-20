@@ -1,7 +1,5 @@
 package httpgame;
 
-import java.util.UUID;
-
 /**
  *
  * @author u11306026
@@ -20,8 +18,20 @@ public class Player {
     public Player() {
         state = NON_EXISTANT;
     }
+
+    public int getState()
+    {
+        return state;
+    }
+
+    public void setState(int state)
+    {
+        this.state = state%6;
+    }
     
-    
-            
+    public void nextState()
+    {
+        setState(state+1);
+    }
     
 }

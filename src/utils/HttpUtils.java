@@ -4,9 +4,13 @@
  */
 package utils;
 
+import httpgame.Player;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -68,4 +72,18 @@ public class HttpUtils
     public static final String DEFAULT_MESSAGE = "I'm a teapot";
     
     public static final String CRLF = "\r\n", SP = " ";
+    
+    
+    
+    private static ConcurrentHashMap<UUID, Player> registered
+            = new ConcurrentHashMap<UUID, Player>();
+    
+    public static Player getPlayer(UUID uuid)
+    {
+        if (registered.contains(uuid))
+            return registered.get(uuid);
+        Player player = new Player();
+        registered.put(uuid, player);
+        return player;
+    }
 }
