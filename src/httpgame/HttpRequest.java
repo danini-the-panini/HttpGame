@@ -162,7 +162,7 @@ public class HttpRequest
         {
             println("before reading content");
             content = new byte[getContentLength()];
-            in.read(content);
+            this.in.read(content);
             println("after reading content");
         }
         
