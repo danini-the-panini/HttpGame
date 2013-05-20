@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import static utils.ConsoleUtils.*;
+import static utils.FileUtils.*;
 
 public class HttpRequest
 {
@@ -14,53 +15,32 @@ public class HttpRequest
     
     private BufferedInputStream in;
     
-    private String readLine()
-            throws IOException
-    {
-        int input;
-        int state = 0;
-        
-        String line = new String();
-        
-        while (state != -1)
-        {
-            input = in.read();
-            if (input == -1) state = 0;
-            else if (input == '\r')
-            {
-                input = in.read();
-                if (input == '\n')
-                    state = -1;
-                else
-                    line += (char)input;
-            }
-            else
-                line += (char)input;
-        }
-        return line;
-    }
-    
-    private String read(int numBytes)
-            throws IOException
-    {
-        byte[] buffer = new byte[numBytes];
-        int numRead = 0;
-        int n = 0;
-        
-        while (numRead < numBytes && n > 0)
-        {
-            n = in.read(buffer, numRead, Math.min(4096, numBytes-numRead));
-            if (n != -1) numRead += n;
-        }
-        return new String(buffer, 0, numRead);
-    }
-    
     private void parseHeader(String line)
     {
         int colon = line.indexOf(":");
         String name = line.substring(0, colon).trim();
         String value = line.substring(colon+1).trim();
         headers.put(name, value);
+    }
+
+    public String getMethod()
+    {
+        return method;
+    }
+
+    public String getUrl()
+    {
+        return url;
+    }
+
+    public String getHttpVersion()
+    {
+        return httpVersion;
+    }
+    
+    public String getHeader(String name)
+    {
+        return headers.get(name);
     }
     
     public HttpRequest(InputStream in)
@@ -72,23 +52,21 @@ public class HttpRequest
         
         println(Tn + "+=====~~~~------");
         
-        String line = readLine();
-        if (line != null && !line.isEmpty())
+        String line = readLine(this.in);
+        println(Tn + "| <- " + line);
+        
+        String[] splits = line.split(" ");
+        method = splits[0];
+        url = splits[1];
+        httpVersion = splits[2];
+
+        while ((line = readLine(this.in)) != null && !line.isEmpty())
         {
+            parseHeader(line);
             println(Tn + "| <- " + line);
-
-            while ((line = readLine()) != null && !line.isEmpty())
-            {
-                parseHeader(line);
-                println(Tn + "| <- " + line);
-            }
-
-            println(Tn + "+=====~~~~------");
         }
-        else
-        {
-            throw new IOException(Tn + " -! Empty request!");
-        }
+
+        println(Tn + "+=====~~~~------");
         
     }
     

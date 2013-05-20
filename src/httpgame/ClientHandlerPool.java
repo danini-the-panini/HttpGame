@@ -2,6 +2,7 @@ package httpgame;
 
 import java.io.IOException;
 import java.net.Socket;
+import static utils.ConsoleUtils.*;
 
 /**
  *
@@ -23,14 +24,22 @@ public class ClientHandlerPool
     {
         for (int i = 0; /* spin forever! */ ; i = (i+1)%handlers.length)
         {
-            if (handlers[i].isAvailable())
+            if (!handlers[i].hasSocket())
             {
-                handlers[i].setAvailable(false);
                 if (!handlers[i].isAlive())
                     handlers[i].start();
                 handlers[i].handle(sock);
                 return;
             }
+        }
+    }
+    
+    public void list()
+    {
+        for (int i = 0; i < handlers.length; i++)
+        {
+            println(handlers[i].getName() + ": " + (handlers[i].isAlive() ? "Alive" : "Dead") +
+                    " and " + (handlers[i].hasSocket() ? "Busy" : "Idle"));
         }
     }
     

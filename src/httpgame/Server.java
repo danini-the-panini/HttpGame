@@ -61,6 +61,11 @@ public class Server extends Thread
         
     }
     
+    public void list()
+    {
+        pool.list();
+    }
+    
     
     public void shutDown()
             throws IOException

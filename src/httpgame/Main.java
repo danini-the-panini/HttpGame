@@ -40,6 +40,10 @@ public class Main
                 {
                     running = false;
                 }
+                else if ("LIST".equals(command))
+                {
+                    server.list();
+                }
                 else
                 {
                     println("Bad command or file name.");

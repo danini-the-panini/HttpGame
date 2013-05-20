@@ -1,13 +1,18 @@
 package httpgame;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import static utils.ConsoleUtils.*;
+import static utils.FileUtils.*;
 
 /**
  *
@@ -16,7 +21,6 @@ import static utils.ConsoleUtils.*;
 public class ClientHandler extends Thread
 {
     private AtomicBoolean running = new AtomicBoolean(true);
-    private AtomicBoolean available = new AtomicBoolean(true);
     
     private AtomicReference<Socket> socket = new AtomicReference<Socket>(null);
     private InputStream in;
@@ -38,30 +42,62 @@ public class ClientHandler extends Thread
     {
         while (running.get())
         {
-            while (running.get() && available.get()) { /* spin! */ }
-            if (running.get()) println(getName() + " grabbed from pool.");
             while (running.get() && socket.get() == null) { /* spin some more! */ }
+            
+            Socket currentSocket = null;
             
             if (running.get())
             {
                 println(getName() + " running.");
                 try
                 {
-                    Socket socket = this.socket.get();
+                    currentSocket = socket.get();
                     
-                    in = socket.getInputStream();
-                    out = socket.getOutputStream();
+                    in = currentSocket.getInputStream();
+                    out = currentSocket.getOutputStream();
 
                     println(getName() + " READING REQUEST");
                     HttpRequest request = new HttpRequest(in);
                     
-                    // TODO: blah
+                    String url = request.getUrl();
+                    if (url.startsWith("/")) url = "."+url;
+                    else url = "./"+url;
+                    if (url.endsWith("/")) url += "index.html";
+                    
+                    String ext = url.substring(url.lastIndexOf(".")+1);
+                    String type;
+                    if ("html".equalsIgnoreCase(ext) ||
+                            "htm".equalsIgnoreCase(ext) ||
+                            "danml".equalsIgnoreCase(ext))
+                        type = "text/html";
+                    else if ("png".equalsIgnoreCase(ext))
+                        type = "image/png";
+                    else
+                        type = "text/plain";
+                    
+                    println("URL == " + url);
+                    File res = new File(url);
+                    
                     println(getName() + " SENDING RESPONSE");
-                    HttpResponse response = new HttpResponse(200);
-                    response.setContentType("text/plain");
-                    response.setContent("Hello World!".getBytes());
+                    HttpResponse response = new HttpResponse();
+                    if (res.exists())
+                    {
+                        BufferedInputStream resIn =
+                                new BufferedInputStream(new FileInputStream(res));
+                        
+                        byte[] content = read(resIn);
+                        
+                        response.setStatus(200);
+                        response.setContentType(type);
+                        response.setContent(content);
+                    }
+                    else
+                    {
+                        response.setStatus(404);
+                    }
                     response.send(out);
                     
+                    currentSocket.close();
                 }
                 catch (SocketException ex)
                 {
@@ -75,21 +111,16 @@ public class ClientHandler extends Thread
                 }
                 println(getName() + " done.");
             }
+                    
+            socket.compareAndSet(currentSocket, null);
             
-            setAvailable(true);
-            socket.set(null);
         }
         println(Thread.currentThread().getName() + " shutting down.");
     }
 
-    public boolean isAvailable()
+    public boolean hasSocket()
     {
-        return available.get();
-    }
-
-    public void setAvailable(boolean available)
-    {
-        this.available.set(available);
+        return socket.get() != null;
     }
     
     public void shutDown()

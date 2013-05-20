@@ -18,13 +18,13 @@ import static utils.HttpUtils.*;
 public class HttpResponse
 {
     
-    private int status;
+    private int status = 0;
     
     private HashMap<String,String> headers = new HashMap<String, String>();
     
     private byte[] content = null;
 
-    public HttpResponse(int status)
+    public void setStatus(int status)
     {
         this.status = status;
     }
@@ -36,18 +36,21 @@ public class HttpResponse
     
     public void setContentType(String value)
     {
-        setHeader("content-type",value);
+        setHeader("Content-Type",value);
     }
 
     public void setContent(byte[] content)
     {
         this.content = content;
-        setHeader("content-length", ""+content.length);
+        setHeader("Content-Length", ""+content.length);
     }
     
     public void send(OutputStream out)
             throws IOException
     {
+        if (status == 0)
+            throw new IOException("HTTP status not set");
+        
         String Tn = Thread.currentThread().getName();
         
         println(Tn+"+=====~~~~------");
