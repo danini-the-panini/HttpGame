@@ -1,0 +1,19 @@
+0: nonexistant
+	on load, register UUID and goto 1
+1: registered, not playing
+	on load, present option to play
+	on play option, goto 2
+2: waiting for match
+	on load, check for other players
+	if other player waiting, match players and goto 3
+3: ingame, waiting for turn
+	on load, check other player's status
+	if other player waiting for turn goto 4
+4: ingame, placing turn
+	one load, present playable options
+	on selecting option, check for endgame
+	if endgame goto 5
+	else goto 3
+5: endgame
+	on load, present game verdict and option to continue
+	on continue option, goto 1

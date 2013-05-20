@@ -4,7 +4,9 @@
  */
 package utils;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  *
@@ -12,6 +14,9 @@ import java.util.HashMap;
  */
 public class HttpUtils
 {
+    public static final SimpleDateFormat HTTP_DATE_FORMAT = new SimpleDateFormat(
+        "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    
     public static final String HTTP_VERSION = "HTTP/1.1";
     
     public static final HashMap<Integer, String> STATUS_CODES = new HashMap<Integer, String>();

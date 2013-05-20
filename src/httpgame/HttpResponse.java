@@ -6,6 +6,7 @@ package httpgame;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import static utils.ConsoleUtils.*;
@@ -43,6 +44,19 @@ public class HttpResponse
     {
         this.content = content;
         setHeader("Content-Length", ""+content.length);
+    }
+    
+    public void setCookie(String token, Date expires)
+    {
+        setHeader("Set-Cookie",
+                "token=" + token + "; "
+                + "path=/; "
+                + "expres="+ HTTP_DATE_FORMAT.format(expires));
+    }
+    
+    public void deleteCookie()
+    {
+        setCookie(" ",new Date(0));
     }
     
     public void send(OutputStream out)
