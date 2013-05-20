@@ -7,8 +7,8 @@
     </head>
     <body>
         <div id="temp">You are playing a Game!</div>
-        <table>
+        <div>
             <? board ?>
-        </table>
+        </div>
     </body>
 </html>
