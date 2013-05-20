@@ -1,37 +1,43 @@
 package httpgame;
 
+import bot.AlphaBetaTree;
+import bot.MyTTTHeuristic;
+import bot.TTTBoard;
+
 /**
  *
  * @author u11306026
  */
 public class Player {
     
-    public static final int NON_EXISTANT = 0,
-            REGISTERED = 1,
-            WAITING_FOR_GAME = 2,
-            WAITING_FOR_TURN = 3,
-            PLAYING = 4,
-            ENDGAME = 5;
+    private TTTBoard board;
+    private AlphaBetaTree<TTTBoard> abtree;
+    private int depth;
     
-    private int state;
-
-    public Player() {
-        state = NON_EXISTANT;
-    }
-
-    public int getState()
+    public void startGame(int size, int goal, int depth)
     {
-        return state;
-    }
-
-    public void setState(int state)
-    {
-        this.state = state%6;
+        this.depth = depth;
+        
+        board = new TTTBoard(size, size, goal); 
+        abtree = new AlphaBetaTree<TTTBoard>(new MyTTTHeuristic());
+        
+        if (Math.random() > 0.5) board.nextPlayer();
+        
+        if (board.getCurrentPlayer() == 1) // bot starts first
+        {
+            botMove();
+        }
     }
     
-    public void nextState()
+    public void botMove()
     {
-        setState(state+1);
+        int[] move = abtree.evaluate(board, depth);
+        board.applyMove(move[0], move[1]);
+    }
+
+    public TTTBoard getBoard()
+    {
+        return board;
     }
     
 }

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,7 +43,8 @@ public class ClientHandler extends Thread
     
     public static abstract class Executor
     {
-        public abstract byte[] run(HttpRequest request);
+        public abstract void run(HttpRequest request, HttpResponse response)
+                throws IOException;
     }
     
     @Override
@@ -66,67 +68,16 @@ public class ClientHandler extends Thread
 
                     println(getName() + " READING REQUEST");
                     HttpRequest request = new HttpRequest(in);
+                    HttpResponse response = new HttpResponse();
                     
                     String url = request.getUrl();
                     if (url.endsWith("/")) url += "index.html";
                     
-                    boolean isExecutor = false;
-                    
-                    String ext = url.substring(url.lastIndexOf(".")+1);
-                    String type;
-                    if ("html".equalsIgnoreCase(ext) ||
-                            "htm".equalsIgnoreCase(ext) ||
-                            "danml".equalsIgnoreCase(ext))
-                        type = "text/html";
-                    else if ("js".equalsIgnoreCase(ext))
-                        type = "application/javascript";
-                    else if ("css".equalsIgnoreCase(ext))
-                        type = "text/css";
-                    else if ("png".equalsIgnoreCase(ext))
-                        type = "image/png";
-                    else if ("x".equalsIgnoreCase(ext))
+                    if (url.endsWith(".x"))
                     {
-                        isExecutor = true;
-                        type = "text/plain"; // TODO: jason maybe?
-                    }
-                    else
-                        type = "text/plain";
-                    
-                    if (!isExecutor)
-                    {
-                        if (url.startsWith("/")) url = "."+url;
-                        else url = "./"+url;
-                    }
-                    else
-                    {
-                        if (url.startsWith("/")) url = url.substring(1);
-                    }
-                    
-                    println("URL == " + url);
-                    
-                    UUID uuid;
-                    String uuidStr = request.getCookie("uuid");
-                    if (uuidStr != null) uuid = UUID.fromString(uuidStr);
-                    else uuid = UUID.randomUUID();
-                    
-                    Player player = getPlayer(uuid);
-                    
-                    String stateStr = request.getParameterValue("state");
-                    int newState = -1;
-                    if (stateStr != null)
-                    {
-                        newState =  Integer.parseInt(stateStr);
-                        println("NEW STATE IS " + newState + "!!!");
-                    }
-                    
-                    println(getName() + " SENDING RESPONSE");
-                    HttpResponse response = new HttpResponse();
-                    File res = new File(url);
                         
-                    byte[] content = null;
-
-                    if (isExecutor)
-                    {
+                        if (url.startsWith("/")) url = url.substring(1);
+                        
                         String exName = url.substring(0, url.indexOf(".x"));
                         println("EXECUTOR NAME: " + exName);
                         Executor ex = null;
@@ -136,33 +87,14 @@ public class ClientHandler extends Thread
                         } catch (Exception ex1)
                         { println(ex1.toString()); }
                         if (ex != null)
-                            content = ex.run(request);
-                    }
-                    else  if (res.exists())
-                    {
-                        BufferedInputStream resIn =
-                                new BufferedInputStream(new FileInputStream(res));
-
-                        content = read(resIn);
-                    }
-
-                    if ("danml".equals(ext))
-                    {
-                        Danml danml = new Danml(new String(content));
-                        danml.addReplacement("board", GameUtils.buildBoard());
-                        content = danml.parse().getBytes();
-                    }
-
-                    if (content == null)
-                    {
-                        response.setStatus(404);
+                            ex.run(request, response);
                     }
                     else
                     {
-                        response.setStatus(200);
-                        response.setContentType(type);
-                        response.setContent(content);
+                        new FileFetcher().run(request, response);
                     }
+                    
+                    println(getName() + " SENDING RESPONSE");
                         
                     response.send(out);
                     

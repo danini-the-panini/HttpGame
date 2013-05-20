@@ -17,7 +17,7 @@ public class GameUtils
             sb.append("<tr>");
             for (int j = 0; j < GAME_SIZE; j++)
             {
-                sb.append(String.format("<td><button id=\"%d,%d\" value=\"%d,%d\" onclick=\"board(%d,%d)\"></td>", i,j,i,j,i,j));
+                sb.append(String.format("<td><button id=\"%d,%d\" onclick=\"board(%d,%d)\">Z</button></td>", i,j,i,j,i,j));
             }
             sb.append("</tr>").append(HttpUtils.CRLF);
         }
