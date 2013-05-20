@@ -63,14 +63,16 @@ public class FileFetcher extends ClientHandler.Executor
                 Player player = getPlayer(request, response);
                 
                 String newGameString = request.getParameterValue("newGame");
-                if (newGameString != null && newGameString.equalsIgnoreCase("true"))
+                if (newGameString != null && newGameString.equalsIgnoreCase("true")
+                        || player.getBoard() == null)
                 {
                     println("Starting New Game!!! :) :) :) :) :) :)");
-                    player.startGame(GAME_SIZE, GAME_SIZE, 5);
+                    player.startGame(GAME_SIZE, GAME_GOAL, PLY_DEPTH);
                 }
                 
                 Danml danml = new Danml(new String(content));
                 danml.addReplacement("board", buildBoard(player.getBoard()));
+                danml.addReplacement("title", getTitle(player));
                 content = danml.parse().getBytes();
             }
         }

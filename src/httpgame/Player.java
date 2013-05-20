@@ -11,7 +11,7 @@ import bot.TTTBoard;
 public class Player {
     
     private TTTBoard board;
-    private AlphaBetaTree<TTTBoard> abtree;
+    private AlphaBetaTree<TTTBoard> abtree = new AlphaBetaTree<TTTBoard>(new MyTTTHeuristic());
     private int depth;
     private int playerNum;
     
@@ -19,15 +19,19 @@ public class Player {
     {
         this.depth = depth;
         
-        board = new TTTBoard(size, size, goal); 
-        abtree = new AlphaBetaTree<TTTBoard>(new MyTTTHeuristic());
+        board = new TTTBoard(size, size, goal);
         
         playerNum = (Math.random() > 0.5) ? 0 : 1;
         
-        if (board.getCurrentPlayer() != playerNum)
+        if (!board.isGameOver() && board.getCurrentPlayer() != playerNum)
         {
             botMove();
         }
+    }
+    
+    public void endGame()
+    {
+        board = null;
     }
 
     public int getPlayerNum()
@@ -38,7 +42,8 @@ public class Player {
     public void botMove()
     {
         int[] move = abtree.evaluate(board, depth);
-        board.applyMove(move[0], move[1]);
+        if (board.valid(move[0],move[1]))
+                board.applyMove(move[0], move[1]);
     }
 
     public TTTBoard getBoard()

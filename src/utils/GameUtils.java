@@ -10,20 +10,23 @@ import httpgame.Player;
  */
 public class GameUtils
 {
-    public static final int GAME_SIZE = 8;
+    public static final int GAME_SIZE = 8, GAME_GOAL = 4, PLY_DEPTH = 4;
+    
+    public static String buildPage(Player player)
+    {
+        
+        return getTitle(player) + "\r\n" + buildBoard(player.getBoard());
+    }
     
     public static String buildBoard(TTTBoard board)
     {
         StringBuilder sb = new StringBuilder();
-        if (board == null)
-            sb.append("<div>Board is Null</div>");
         sb.append("<table>");
         for (int i = 0; i < GAME_SIZE; i++)
         {
             sb.append("<tr>");
             for (int j = 0; j < GAME_SIZE; j++)
             {
-                String inside = " ";
                 String divClass = "open";
                 
                 if (board != null)
@@ -32,25 +35,40 @@ public class GameUtils
                     {
                         case 0:
                             divClass = "black";
-                            inside = "X";
                             break;
                         case 1:
                             divClass = "white";
-                            inside = "O";
                             break;
                         default:
-                            divClass = "open";
-                            inside = "-";
+                            divClass = "open" + (board.getCurrentPlayer()==0 ? "Black" : "White");
                             break;
                     }
                 }
                 
-                sb.append(String.format("<td><button class=\"%s\" onclick=\"board(%d,%d)\">%s</button></td>",
-                        divClass, i,j, inside));
+                sb.append(String.format("<td><div class=\"%s\" id=\"%d,%d\""
+                        + " onclick=\"board(%d,%d)\"></div></td>",
+                        divClass, i, j, i, j));
             }
             sb.append("</tr>").append(HttpUtils.CRLF);
         }
         sb.append("</table>");
         return sb.toString();
+    }
+    
+    public static String getTitle(Player player)
+    {
+        TTTBoard board = player.getBoard();
+        if (board != null && board.isGameOver())
+        {
+            String h1;
+            if (board.getWinner() == Board.DRAW)
+                h1 = "<h1 class=\"draw\">Game was a draw</h1>";
+            else if (board.getWinner() == player.getPlayerNum())
+                h1 = "<h1 class=\"win\">You won!</h1>";
+            else
+                h1 = "<h1 class=\"lose\">You failed!</h1>";
+            return h1;
+        }
+        return "<h1 class=\"title\">Daniel and J's: Gomoku -1</h1>";
     }
 }

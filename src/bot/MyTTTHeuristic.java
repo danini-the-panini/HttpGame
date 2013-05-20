@@ -1,5 +1,7 @@
 package bot;
 
+
+
 /**
  * This class defines the heuristic I decided to use to evaluate TicTacToe game states.
  * @author Daniel

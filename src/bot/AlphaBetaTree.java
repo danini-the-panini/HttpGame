@@ -1,5 +1,7 @@
 package bot;
 
+
+
 /**
  * Generic MinMax tree using AlphaBeta pruning. Must be given a Heuristic object to evaluate leaf nodes.
  * @author Daniel

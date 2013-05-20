@@ -5,8 +5,6 @@
 package httpgame;
 
 import bot.TTTBoard;
-import java.util.Date;
-import java.util.UUID;
 import static utils.ConsoleUtils.*;
 import utils.GameUtils;
 import static utils.HttpUtils.getPlayer;
@@ -35,17 +33,29 @@ public class Play extends ClientHandler.Executor
             
             TTTBoard board = player.getBoard();
             
-            if (board != null && board.getCurrentPlayer() == player.getPlayerNum())
+            if (board != null)
             {
-                board.applyMove(row, col);
-                player.botMove();
+                if (board.isGameOver())
+                {
+                    //player.endGame();
+                }
+                else if (board.getCurrentPlayer() == player.getPlayerNum())
+                {
+                    if (board.valid(row, col))
+                    {
+                        if (board.applyMove(row, col) && !board.isGameOver())
+                            player.botMove();
+                    }
+                }
             }
 
             response.setStatus(200);
-            response.setContent(GameUtils.buildBoard(board).getBytes());
+            response.setContent(GameUtils.buildPage(player).getBytes());
         }
         catch (Exception ex)
         {
+            println(ex.toString());
+            ex.printStackTrace(System.err);
             response.setStatus(500);
             //response.setContent(ex.toString().getBytes());
         }

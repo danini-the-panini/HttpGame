@@ -1,14 +1,18 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
     <head>
-        <title></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <script src="board.js"></script>
+            <title>Daniel's Http Game!</title>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <script src="board.js"> </script>
+            <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <div id="temp">You are playing a Game!</div>
-        <div id="board">
-            <? board ?>
+        <div class="back"><a href="/">&lt; Go Back</a></div>
+	<div class="container" id="board">
+		<? title ?>
+
+                <? board ?>
         </div>
     </body>
 </html>
+

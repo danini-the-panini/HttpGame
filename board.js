@@ -1,5 +1,11 @@
 function board(row,col)
 {
+    
+    var block = document.getElementById(row+","+col);
+    var c = block.getAttribute("class").toLowerCase().substring(4);
+    
+    block.setAttribute("class",c)
+    
     var xmlhttp = new XMLHttpRequest();
     
     xmlhttp.onreadystatechange=function()

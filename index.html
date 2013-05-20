@@ -3,13 +3,23 @@
     <head>
         <title>Daniel's Http Game!</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
         <div>
-            <form method="POST" action="board.danml">
-                <input type="hidden" name="newGame" value="true">
-                <input type="submit" value="New Game!" >
-            </form>
+            <div class="container">
+                <h1>Daniel and J's: Gomoku -1</h1>
+                <h2>Main Menu</h2>
+                <form method="POST" action="board.danml">
+                    <input type="hidden" name="newGame" value="false">
+                    <input type="submit" value="Continue" >
+                </form>
+                <form method="POST" action="board.danml">
+                    <input type="hidden" name="newGame" value="true">
+                    <input type="submit" value="New Game!" >
+                </form>
+            </div>
         </div>
     </body>
 </html>
+
