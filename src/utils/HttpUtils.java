@@ -4,11 +4,13 @@
  */
 package utils;
 
+import httpgame.HttpRequest;
+import httpgame.HttpResponse;
 import httpgame.Player;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -80,10 +82,22 @@ public class HttpUtils
     
     public static Player getPlayer(UUID uuid)
     {
-        if (registered.contains(uuid))
+        if (registered.containsKey(uuid))
             return registered.get(uuid);
         Player player = new Player();
         registered.put(uuid, player);
         return player;
+    }
+    
+    public static Player getPlayer(HttpRequest request, HttpResponse response)
+    {
+        UUID uuid;
+        String uuidStr = request.getCookie("uuid");
+        if (uuidStr != null) uuid = UUID.fromString(uuidStr);
+        else uuid = UUID.randomUUID();
+        
+        response.setCookie("uuid", uuid.toString(), new Date(Long.MAX_VALUE));
+        
+        return getPlayer(uuid);
     }
 }

@@ -13,6 +13,7 @@ public class Player {
     private TTTBoard board;
     private AlphaBetaTree<TTTBoard> abtree;
     private int depth;
+    private int playerNum;
     
     public void startGame(int size, int goal, int depth)
     {
@@ -21,12 +22,17 @@ public class Player {
         board = new TTTBoard(size, size, goal); 
         abtree = new AlphaBetaTree<TTTBoard>(new MyTTTHeuristic());
         
-        if (Math.random() > 0.5) board.nextPlayer();
+        playerNum = (Math.random() > 0.5) ? 0 : 1;
         
-        if (board.getCurrentPlayer() == 1) // bot starts first
+        if (board.getCurrentPlayer() != playerNum)
         {
             botMove();
         }
+    }
+
+    public int getPlayerNum()
+    {
+        return playerNum;
     }
     
     public void botMove()

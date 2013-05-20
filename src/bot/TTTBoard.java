@@ -246,9 +246,4 @@ public class TTTBoard extends Board
             out.println();
         }
     }
-    
-    public int[][] getBoard()
-    {
-        return board;
-    }
 }

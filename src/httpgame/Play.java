@@ -4,9 +4,11 @@
  */
 package httpgame;
 
+import bot.TTTBoard;
 import java.util.Date;
 import java.util.UUID;
 import static utils.ConsoleUtils.*;
+import utils.GameUtils;
 import static utils.HttpUtils.getPlayer;
 
 /**
@@ -20,15 +22,8 @@ public class Play extends ClientHandler.Executor
     public void run(HttpRequest request, HttpResponse response)
     {
         println("Hello World!");
-                    
-        UUID uuid;
-        String uuidStr = request.getCookie("uuid");
-        if (uuidStr != null) uuid = UUID.fromString(uuidStr);
-        else uuid = UUID.randomUUID();
-
-        Player player = getPlayer(uuid);
         
-        response.setCookie("uuid", uuid.toString(), new Date(Long.MAX_VALUE));
+        Player player = getPlayer(request, response);
         
         String rowStr = request.getParameterValue("row");
         String colStr = request.getParameterValue("col");
@@ -37,9 +32,17 @@ public class Play extends ClientHandler.Executor
         {
             int row = Integer.parseInt(rowStr);
             int col = Integer.parseInt(colStr);
+            
+            TTTBoard board = player.getBoard();
+            
+            if (board != null && board.getCurrentPlayer() == player.getPlayerNum())
+            {
+                board.applyMove(row, col);
+                player.botMove();
+            }
 
             response.setStatus(200);
-            response.setContent(String.format("You clicked on %d, %d", row, col).getBytes());
+            response.setContent(GameUtils.buildBoard(board).getBytes());
         }
         catch (Exception ex)
         {

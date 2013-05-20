@@ -7,7 +7,7 @@
     </head>
     <body>
         <div id="temp">You are playing a Game!</div>
-        <div>
+        <div id="board">
             <? board ?>
         </div>
     </body>

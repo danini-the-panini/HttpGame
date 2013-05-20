@@ -8,8 +8,10 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import static utils.FileUtils.read;
-import utils.GameUtils;
+import static utils.FileUtils.*;
+import static utils.GameUtils.*;
+import static utils.HttpUtils.*;
+import static utils.ConsoleUtils.*;
 
 /**
  *
@@ -23,6 +25,7 @@ public class FileFetcher extends ClientHandler.Executor
             throws IOException
     {
         String url = request.getUrl();
+        if (url.endsWith("/")) url += "index.html";
         
         String ext = url.substring(url.lastIndexOf(".")+1);
         String type;
@@ -57,8 +60,17 @@ public class FileFetcher extends ClientHandler.Executor
             // TODO: depends on player I think...
             if ("danml".equals(ext))
             {
+                Player player = getPlayer(request, response);
+                
+                String newGameString = request.getParameterValue("newGame");
+                if (newGameString != null && newGameString.equalsIgnoreCase("true"))
+                {
+                    println("Starting New Game!!! :) :) :) :) :) :)");
+                    player.startGame(GAME_SIZE, GAME_SIZE, 5);
+                }
+                
                 Danml danml = new Danml(new String(content));
-                danml.addReplacement("board", GameUtils.buildBoard());
+                danml.addReplacement("board", buildBoard(player.getBoard()));
                 content = danml.parse().getBytes();
             }
         }

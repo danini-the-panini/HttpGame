@@ -43,6 +43,7 @@ public class ClientHandler extends Thread
     
     public static abstract class Executor
     {
+        
         public abstract void run(HttpRequest request, HttpResponse response)
                 throws IOException;
     }
@@ -71,7 +72,6 @@ public class ClientHandler extends Thread
                     HttpResponse response = new HttpResponse();
                     
                     String url = request.getUrl();
-                    if (url.endsWith("/")) url += "index.html";
                     
                     if (url.endsWith(".x"))
                     {
