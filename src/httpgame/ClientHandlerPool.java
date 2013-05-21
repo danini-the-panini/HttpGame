@@ -2,6 +2,8 @@ package httpgame;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import static utils.ConsoleUtils.*;
 
 /**
@@ -11,27 +13,34 @@ import static utils.ConsoleUtils.*;
 public class ClientHandlerPool
 {
     private ClientHandler[] handlers;
+    ExecutorService executor ;
 
     public ClientHandlerPool(int capacity)
     {
-        handlers = new ClientHandler[capacity];
-        for (int i = 0; i < capacity; i++)
-            handlers[i] = new ClientHandler("T"+i);
+        executor = Executors.newFixedThreadPool(capacity);
+//        handlers = new ClientHandler[capacity];
+//        for (int i = 0; i < capacity; i++)
+//            handlers[i] = new ClientHandler("T"+i);
     }
     
     public void handle(Socket sock)
             throws IOException
     {
-        for (int i = 0; /* spin forever! */ ; i = (i+1)%handlers.length)
-        {
-            if (!handlers[i].hasSocket())
-            {
-                if (!handlers[i].isAlive())
-                    handlers[i].start();
-                handlers[i].handle(sock);
-                return;
-            }
-        }
+        ClientHandler client = new ClientHandler("T" + Math.random());
+        client.handle(sock);
+        Runnable worker = client;
+        executor.execute(worker);
+        
+//        for (int i = 0; /* spin forever! */ ; i = (i+1)%handlers.length)
+//        {
+//            if (!handlers[i].hasSocket())
+//            {
+//                if (!handlers[i].isAlive())
+//                    handlers[i].start();
+//                handlers[i].handle(sock);
+//                return;
+//            }
+//        }
     }
     
     public void list()

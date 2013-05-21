@@ -22,99 +22,99 @@ import utils.GameUtils;
  *
  * @author Daniel
  */
-public class ClientHandler extends Thread
+public class ClientHandler implements Runnable
 {
+
     private AtomicBoolean running = new AtomicBoolean(true);
-    
     private AtomicReference<Socket> socket = new AtomicReference<Socket>(null);
     private InputStream in;
     private OutputStream out;
+    private String name;
 
     public ClientHandler(String name)
     {
-        super(name);
+        this.name = name;
     }
-    
+
+    private String getName()
+    {
+        return name;
+    }
+
     public void handle(Socket socket)
             throws IOException
     {
         this.socket.set(socket);
     }
-    
+
     public static abstract class Executor
     {
-        
+
         public abstract void run(HttpRequest request, HttpResponse response)
                 throws IOException;
     }
-    
+
     @Override
     public void run()
     {
-        while (running.get())
-        {
+        while (running.get()) {
             while (running.get() && socket.get() == null) { /* spin some more! */ }
-            
+
             Socket currentSocket = null;
-            
-            if (running.get())
-            {
+
+            if (running.get()) {
                 println(getName() + " running.");
-                try
-                {
+                try {
                     currentSocket = socket.get();
-                    
+
                     in = currentSocket.getInputStream();
                     out = currentSocket.getOutputStream();
 
                     println(getName() + " READING REQUEST");
                     HttpRequest request = new HttpRequest(in);
                     HttpResponse response = new HttpResponse();
-                    
+
                     String url = request.getUrl();
-                    
-                    if (url.endsWith(".x"))
-                    {
-                        
-                        if (url.startsWith("/")) url = url.substring(1);
-                        
+
+                    if (url.endsWith(".x")) {
+
+                        if (url.startsWith("/")) {
+                            url = url.substring(1);
+                        }
+
                         String exName = url.substring(0, url.indexOf(".x"));
                         println("EXECUTOR NAME: " + exName);
                         Executor ex = null;
-                        try
-                        {
-                            ex = (Executor)(Class.forName("httpgame."+exName).newInstance());
-                        } catch (Exception ex1)
-                        { println(ex1.toString()); }
-                        if (ex != null)
+                        try {
+                            ex = (Executor) (Class.forName("httpgame." + exName).newInstance());
+                        } catch (Exception ex1) {
+                            println(ex1.toString());
+                        }
+                        if (ex != null) {
                             ex.run(request, response);
-                    }
-                    else
-                    {
+                        }
+                    } else {
                         new FileFetcher().run(request, response);
                     }
-                    
+
                     println(getName() + " SENDING RESPONSE");
-                        
+
                     response.send(out);
-                    
+
                     currentSocket.close();
-                }
-                catch (SocketException ex)
-                {
+                } catch (SocketException ex) {
                     // ?
-                    if (ex.getMessage().trim().equals("socket closed"))
+                    if (ex.getMessage().trim().equals("socket closed")) {
                         println(getName() + " Socket closed");
-                }
-                catch (IOException ex)
-                {
+                    }
+                } catch (IOException ex) {
                     System.out.println(ex);
                 }
                 println(getName() + " done.");
             }
-                    
+
             socket.compareAndSet(currentSocket, null);
-            
+
         }
         println(Thread.currentThread().getName() + " shutting down.");
     }
@@ -123,13 +123,14 @@ public class ClientHandler extends Thread
     {
         return socket.get() != null;
     }
-    
+
     public void shutDown()
             throws IOException
     {
         running.set(false);
         Socket sock = this.socket.get();
-        if (sock != null) sock.close();
+        if (sock != null) {
+            sock.close();
+        }
     }
-    
 }
